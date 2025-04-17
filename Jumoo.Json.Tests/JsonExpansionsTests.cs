@@ -31,7 +31,7 @@ namespace Jumoo.Json.Tests
 
             // Assert
             Assert.NotNull(expandedNode);
-            Assert.Equal(jsonNode.ToJsonString(), expandedNode.ToJsonString());
+            Assert.Equal(jsonNode!.ToJsonString(), expandedNode.ToJsonString());
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Jumoo.Json.Tests
 
             // Assert
             Assert.True(result);
-            Assert.Equal(jsonNode.ToString(), expandedNode.ToString());
+            Assert.Equal(jsonNode.ToString(), expandedNode?.ToString());
         }
 
         [Fact]

@@ -109,8 +109,9 @@ namespace Jumoo.Json.Tests
             // Arrange
             JsonNode? jsonNode = null;
 
+            string? serializedString = null;
             // Act
-            var result = jsonNode.TrySerializeJsonNode(out var serializedString);
+            var result = jsonNode.TrySerializeJsonNode(out serializedString);
 
             // Assert
             Assert.False(result);
@@ -158,7 +159,7 @@ namespace Jumoo.Json.Tests
 
             // Assert
             Assert.True(result);
-            Assert.Equal(invalidString, node.ToString());
+            Assert.Equal(invalidString, node?.ToString());
         }
 
         [Fact]

@@ -54,7 +54,7 @@ namespace Jumoo.Json.Tests
             string? nullString = null;
 
             // Act
-            var escapedValue = nullString.GetEscapedJsonValue();
+            var escapedValue = nullString?.GetEscapedJsonValue();
 
             // Assert
             Assert.Null(escapedValue);

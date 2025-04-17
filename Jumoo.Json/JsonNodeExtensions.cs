@@ -47,12 +47,12 @@ public static class JsonNodeExtensions
     /// <summary>
     /// Serializes a JSON node to a string.
     /// </summary>
-    public static bool TrySerializeJsonNode(this JsonNode node, [NotNullWhen(true)] out string? result, bool indent = true)
+    public static bool TrySerializeJsonNode(this JsonNode? node, [NotNullWhen(true)] out string? result, bool indent = true)
     {
         try
         {
-            result = node.ToJsonString(JsonTextOptions.GetOptions(indent));
-            return true;
+            result = node?.ToJsonString(JsonTextOptions.GetOptions(indent)) ?? default;
+            return result is not null;
         }
         catch
         {

@@ -35,7 +35,7 @@ namespace Jumoo.Json.Tests
         {
             // Arrange
             var obj1 = new { Name = "John", Age = 30 };
-            object obj2 = null;
+            object? obj2 = null;
 
             // Act
             var result = obj1.IsJsonEqual(obj2);
@@ -48,8 +48,8 @@ namespace Jumoo.Json.Tests
         public void IsJsonEqual_ReturnsTrue_ForBothObjectsNull()
         {
             // Arrange
-            object obj1 = null;
-            object obj2 = null;
+            object? obj1 = null;
+            object? obj2 = null;
 
             // Act
             var result = obj1.IsJsonEqual(obj2);
