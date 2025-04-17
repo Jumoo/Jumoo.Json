@@ -1,0 +1,110 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace Jumoo.Json;
+public static class JsonPropertyExtensions
+{
+    /// <summary>
+    /// Tries to get a property value as a JSON object.
+    /// </summary>
+    public static bool TryGetPropertyAsJsonObject(this JsonObject json, string propertyName, [NotNullWhen(true)] out JsonObject? result)
+    {
+        result = default;
+
+        if (json.TryGetPropertyValue(propertyName, out var propertyNode) is false || propertyNode is null) return false;
+
+        try
+        {
+            result = propertyNode.GetValueKind() switch
+            {
+                JsonValueKind.String => new JsonObject
+                {
+                    { propertyName, propertyNode.ToString() }
+                },
+                _ => propertyNode.AsObject()
+            };
+
+            return result is not null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to get a property value as a String Value.
+    /// </summary>
+    public static string? GetPropertyAsString(this JsonObject? obj, string propertyName)
+    {
+        if (obj?.TryGetPropertyValue(propertyName, out var value) is true)
+            return value?.ToString() ?? null;
+
+        return null;
+    }
+
+    /// <summary>
+    /// Tries to get a property value as a Bool Value
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
+    public static bool GetPropertyAsBool(this JsonObject? obj, string propertyName)
+        => obj?.TryGetPropertyValue(propertyName, out var value) is true && bool.TryParse(value?.ToString(), out bool result) is true ? result : false;
+
+    /// <summary>
+    /// Tries to get a property value as a TResult Value
+    /// </summary>
+    public static TResult GetPropertyValueOrDefault<TResult>(this JsonObject obj, string propertyName, TResult defaultValue)
+    {
+        if (obj.TryGetPropertyValue(propertyName, out var value) is false || value is null)
+            return defaultValue;
+
+        try
+        {
+            return value.GetValue<TResult>() ?? defaultValue;
+        }
+        catch
+        {
+            return defaultValue;
+        }
+    }
+
+
+    /// <summary>
+    /// Tries to get a property value as a JSON array.
+    /// </summary>
+    public static bool TryGetPropertyAsArray(this JsonObject obj, string propertyName, [NotNullWhen(true)] out JsonArray? array)
+    {
+        array = default;
+
+        if (obj.TryGetPropertyValue(propertyName, out var value) is false || value is null)
+            return false;
+
+        if (value.GetValueKind() is not JsonValueKind.Array)
+            return false;
+
+        try
+        {
+            array = value.AsArray();
+            return array is not null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Get an array from a property
+    /// </summary>
+    public static JsonArray GetPropertyAsArray(this JsonObject obj, string propertyName)
+        => obj.TryGetPropertyAsArray(propertyName, out var value) ? value ?? [] : [];
+
+    /// <summary>
+    ///  Gets a Json object from a property.
+    /// </summary>
+    public static JsonObject? GetPropertyAsJsonObject(this JsonObject obj, string propertyName)
+        => obj.TryGetPropertyAsJsonObject(propertyName, out var value) ? value : null;
+}
