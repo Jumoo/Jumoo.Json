@@ -58,4 +58,28 @@ public static class JsonTextOptions
     /// returns the default options for JSON Node parsing.
     /// </summary>
     public static JsonNodeOptions GetNodeOptions() => _nodeOptions;
+
+    /// <summary>
+    ///  add another convert to the default list of converters. 
+    /// </summary>
+    public static void AddConverter(JsonConverter converter)
+    {
+        if (_defaultOptions.Converters.Contains(converter) is false)
+            _defaultOptions.Converters.Add(converter);
+
+        if (_flatOptions.Converters.Contains(converter) is false)
+            _flatOptions.Converters.Add(converter);
+    }
+
+    /// <summary>
+    /// Removes a converter from the default list of converters.
+    /// </summary>
+    public static void RemoveConverter(JsonConverter converter)
+    {
+        if (_defaultOptions.Converters.Contains(converter))
+            _defaultOptions.Converters.Remove(converter);
+
+        if (_flatOptions.Converters.Contains(converter))
+            _flatOptions.Converters.Remove(converter);
+    }
 }
