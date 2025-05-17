@@ -1,6 +1,3 @@
-using System;
-using Xunit;
-
 namespace Jumoo.Json.Tests
 {
     public class JsonEscapeExtensionsTests
