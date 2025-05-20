@@ -66,8 +66,6 @@ public static class JsonNodeExtensions
     /// </summary>
     public static bool TryConvertToJsonNode(this string value, [NotNullWhen(true)] out JsonNode? node)
     {
-        node = default;
-
         if (value.TryParseToJsonNode(out node) is true)
             return node is not null;
 

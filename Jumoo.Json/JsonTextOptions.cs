@@ -76,10 +76,7 @@ public static class JsonTextOptions
     /// </summary>
     public static void RemoveConverter(JsonConverter converter)
     {
-        if (_defaultOptions.Converters.Contains(converter))
-            _defaultOptions.Converters.Remove(converter);
-
-        if (_flatOptions.Converters.Contains(converter))
-            _flatOptions.Converters.Remove(converter);
+        _defaultOptions.Converters.Remove(converter);
+        _flatOptions.Converters.Remove(converter);
     }
 }

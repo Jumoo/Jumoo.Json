@@ -51,7 +51,7 @@ public static class JsonPropertyExtensions
     /// <param name="propertyName"></param>
     /// <returns></returns>
     public static bool GetPropertyAsBool(this JsonObject? obj, string propertyName)
-        => obj?.TryGetPropertyValue(propertyName, out var value) is true && bool.TryParse(value?.ToString(), out bool result) is true ? result : false;
+        => obj?.TryGetPropertyValue(propertyName, out var value) is true && bool.TryParse(value?.ToString(), out bool result) is true && result;
 
     /// <summary>
     /// Tries to get a property value as a TResult Value
