@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -10,7 +9,7 @@
 		<PackageId>Jumoo.Json</PackageId>
 		<Copyright>Jumoo 2025</Copyright>
 		<ProjectUrl>https://jumoo.com</ProjectUrl>
-		<Description>JSON Helper libraries for Umbraco packages</Description>
+		<Description>JSON Helper libraries for Jumoo Umbraco packages</Description>
 		<Authors>Jumoo</Authors>
 
 		<PackageReleaseNotes>
