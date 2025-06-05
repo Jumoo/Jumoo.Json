@@ -5,8 +5,31 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
+	
+	<PropertyGroup>
+		<PackageId>Jumoo.Json</PackageId>
+		<Copyright>Jumoo 2025</Copyright>
+		<ProjectUrl>https://jumoo.com</ProjectUrl>
+		<Description>JSON Helper libraries for Umbraco packages</Description>
+		<Authors>Jumoo</Authors>
+
+		<PackageReleaseNotes>
+			v1 - Initial release, Umbraco 16 support.
+		</PackageReleaseNotes>
+
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageReadme>readme.md</PackageReadme>
+		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="16.0.0-rc2" />
+		<None Include="icon.png" Pack="true" PackagePath="\" />
+		<None Include="readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="16.0.0-rc4" />
 	</ItemGroup>
 </Project>
