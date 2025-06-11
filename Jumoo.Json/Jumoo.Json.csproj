@@ -29,6 +29,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="16.0.0-rc6" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="16.0.0" />
 	</ItemGroup>
 </Project>
