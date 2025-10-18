@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Jumoo.Json.Tests/Jumoo.Json.Tests.csproj" />
+  <Project Path="Jumoo.Json/Jumoo.Json.csproj" />
+</Solution>
