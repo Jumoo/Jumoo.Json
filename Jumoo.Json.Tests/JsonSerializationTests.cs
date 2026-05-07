@@ -4,6 +4,26 @@ namespace Jumoo.Json.Tests
 {
     public class JsonSerializationTests
     {
+        private class TestOject
+        {
+            public string? Name { get; set; }
+            public string? Comment { get; set; }
+        }
+
+        [Fact]
+        public void TryDeserialize_TestObject_ReturnsTrue_ForValidJson()
+        {
+            // Arrange
+            var jsonString = "{\"name\":\"Test Name\",\"Comment\":\"This is a test comment.\"}";
+            // Act
+            var result = jsonString.TryDeserialize<TestOject>(out var deserializedObject);
+            // Assert
+            Assert.True(result);
+            Assert.NotNull(deserializedObject);
+            Assert.Equal("Test Name", deserializedObject!.Name);
+            Assert.Equal("This is a test comment.", deserializedObject.Comment);
+        }
+
         [Fact]
         public void TryDeserialize_Generic_ReturnsTrue_ForValidJson()
         {
