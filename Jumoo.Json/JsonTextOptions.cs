@@ -20,6 +20,7 @@ public static class JsonTextOptions
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
         TypeInfoResolver = new OrderedPropertiesJsonResolver(),
+        MaxDepth = 64,
         Converters =
         {
             new JsonStringEnumConverter(),
