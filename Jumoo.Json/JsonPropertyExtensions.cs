@@ -22,7 +22,8 @@ public static class JsonPropertyExtensions
                 {
                     { propertyName, propertyNode.ToString() }
                 },
-                _ => propertyNode.AsObject()
+                JsonValueKind.Object => propertyNode.AsObject(),
+                _ => null
             };
 
             return result is not null;

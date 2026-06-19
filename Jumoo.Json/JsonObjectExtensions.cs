@@ -25,16 +25,10 @@ public static class JsonObjectExtensions
     {
         result = default;
         if (value is null || value.TryConvertToJsonNode(out var node) is false) return false;
+        if (node.GetValueKind() is not JsonValueKind.Object) return false;
 
-        try
-        {
-            result = node.AsObject();
-            return result is not null;
-        }
-        catch
-        {
-            return false;
-        }
+        result = node.AsObject();
+        return result is not null;
     }
 
     /// <summary>

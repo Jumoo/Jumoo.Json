@@ -13,7 +13,7 @@ public static class JsonSerialization
     public static bool TryDeserialize<TObject>(this string? value, [NotNullWhen(true)] out TObject? result)
     {
         result = default;
-        if (string.IsNullOrWhiteSpace(value)) return false;
+        if (string.IsNullOrWhiteSpace(value) || value.DetectIsJson() is false) return false;
 
         try
         {
@@ -32,7 +32,7 @@ public static class JsonSerialization
     public static bool TryDeserialize(this string? value, Type type, [NotNullWhen(true)] out object? result)
     {
         result = default;
-        if (string.IsNullOrWhiteSpace(value)) return false;
+        if (string.IsNullOrWhiteSpace(value) || value.DetectIsJson() is false) return false;
 
         try
         {
