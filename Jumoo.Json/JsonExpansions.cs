@@ -24,39 +24,49 @@ public static class JsonExpansions
             node = value?.DeepClone() ?? null;
             if (node is null) return false;
 
-            switch (node.GetValueKind())
-            {
-                case JsonValueKind.String:
-                    return node.ToString().TryConvertToJsonNode(out node);
-                case JsonValueKind.Object:
-                    var jsonObject = node.AsObject();
-                    foreach (var property in jsonObject.ToList())
-                    {
-                        if (property.Value?.TryExpandJsonNodeValue(out var innerNode) is true)
-                        {
-                            jsonObject[property.Key] = innerNode;
-                        }
-                    }
-                    node = jsonObject;
-                    return true;
-                case JsonValueKind.Array:
-                    var jsonArray = node.AsArray();
-                    for (int n = 0; n < jsonArray.Count; n++)
-                    {
-                        if (jsonArray[n]?.TryExpandJsonNodeValue(out var innerNode) is true)
-                        {
-                            jsonArray[n] = innerNode;
-                        }
-                    }
-                    node = jsonArray;
-                    return true;
-                default:
-                    return true;
-            }
+            node = ExpandNode(node);
+            return true;
         }
         catch
         {
             return false;
+        }
+    }
+
+    private static JsonNode ExpandNode(JsonNode node)
+    {
+        switch (node.GetValueKind())
+        {
+            case JsonValueKind.String:
+                return node.ToString().TryConvertToJsonNode(out var converted) ? converted : node;
+            case JsonValueKind.Object:
+                var jsonObject = node.AsObject();
+                foreach (var key in jsonObject.Select(p => p.Key).ToList())
+                {
+                    var child = jsonObject[key];
+                    if (child is not null)
+                    {
+                        var expanded = ExpandNode(child);
+                        if (!ReferenceEquals(expanded, child))
+                            jsonObject[key] = expanded;
+                    }
+                }
+                return jsonObject;
+            case JsonValueKind.Array:
+                var jsonArray = node.AsArray();
+                for (int n = 0; n < jsonArray.Count; n++)
+                {
+                    var child = jsonArray[n];
+                    if (child is not null)
+                    {
+                        var expanded = ExpandNode(child);
+                        if (!ReferenceEquals(expanded, child))
+                            jsonArray[n] = expanded;
+                    }
+                }
+                return jsonArray;
+            default:
+                return node;
         }
     }
 
