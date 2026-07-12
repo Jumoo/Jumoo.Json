@@ -22,6 +22,9 @@
 		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+		<NuGetAuditMode>direct</NuGetAuditMode>
+
 	</PropertyGroup>
 
 	<ItemGroup>
