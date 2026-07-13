@@ -101,13 +101,27 @@ public static class JsonSerialization
     public static bool TryGetValueAs<TObject>(this object value, [NotNullWhen(true)] out TObject? result)
     {
         result = default;
-        if (value == null) return false;
-        var attempt = value.TryConvertTo<TObject>();
-        if (attempt.Success is false || attempt.Result is null)
+        if (value is null) return false;
+
+        // Umbraco's TryConvertTo turns a JsonElement into a string cleanly, but throws
+        // (and swallows) an InvalidCastException for JsonElement -> value type. Do the
+        // value-type conversion with System.Text.Json first to avoid that noise; string
+        // and anything STJ can't handle fall through to TryConvertTo below.
+        if (value is JsonElement element && typeof(TObject) != typeof(string))
         {
-            result = default;
-            return attempt.Success;
+            try
+            {
+                result = element.Deserialize<TObject>(JsonTextOptions.GetOptions());
+                if (result is not null) return true;
+            }
+            catch
+            {
+                // not something STJ could convert directly - fall back to TryConvertTo below.
+            }
         }
+
+        var attempt = value.TryConvertTo<TObject>();
+        if (attempt.Success is false || attempt.Result is null) return false;
 
         result = attempt.Result;
         return true;
