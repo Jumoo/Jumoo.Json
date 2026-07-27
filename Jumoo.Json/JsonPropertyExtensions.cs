@@ -3,6 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Reading properties off a <see cref="JsonObject"/> as specific types, without throwing.
+/// </summary>
 public static class JsonPropertyExtensions
 {
     /// <summary>

@@ -8,6 +8,11 @@ using System.Text.Json.Serialization;
 using Umbraco.Cms.Infrastructure.Serialization;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  The shared <see cref="JsonSerializerOptions"/> used across Jumoo packages, so they all
+///  read and write JSON the same way.
+/// </summary>
 public static class JsonTextOptions
 {
     /// <summary>

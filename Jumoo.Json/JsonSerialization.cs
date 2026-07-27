@@ -5,6 +5,10 @@ using System.Text.Json.Nodes;
 using Umbraco.Extensions;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Serializing and deserializing objects using the shared <see cref="JsonTextOptions"/>.
+/// </summary>
 public static class JsonSerialization
 {
     /// <summary>

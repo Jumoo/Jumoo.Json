@@ -3,6 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Extensions for getting <see cref="JsonObject"/> values out of strings and objects.
+/// </summary>
 public static class JsonObjectExtensions
 {
     /// <summary>
