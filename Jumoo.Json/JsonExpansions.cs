@@ -16,15 +16,26 @@ public static class JsonExpansions
     /// <summary>
     /// Tries to expand the JSON node value.
     /// </summary>
+    /// <remarks>
+    ///  When there is nothing to expand the original node is handed back rather than a clone,
+    ///  so don't mutate the result unless you know something was expanded.
+    /// </remarks>
     public static bool TryExpandJsonNodeValue(this JsonNode value, [NotNullWhen(true)] out JsonNode? node)
     {
         node = default;
+        if (value is null) return false;
+
         try
         {
-            node = value?.DeepClone() ?? null;
-            if (node is null) return false;
+            // expansion only ever replaces string values holding json. If the graph has none,
+            // there is nothing to do - and finding that out is far cheaper than the clone.
+            if (HasExpandableValue(value) is false)
+            {
+                node = value;
+                return true;
+            }
 
-            node = ExpandNode(node);
+            node = ExpandNode(value.DeepClone());
             return true;
         }
         catch
@@ -33,24 +44,65 @@ public static class JsonExpansions
         }
     }
 
+    /// <summary>
+    ///  Read-only walk looking for any string value that holds json.
+    /// </summary>
+    private static bool HasExpandableValue(JsonNode node)
+    {
+        switch (node.GetValueKind())
+        {
+            case JsonValueKind.String:
+                return node.ToString().LooksLikeJson();
+            case JsonValueKind.Object:
+                foreach (var property in node.AsObject())
+                {
+                    if (property.Value is not null && HasExpandableValue(property.Value))
+                        return true;
+                }
+                return false;
+            case JsonValueKind.Array:
+                foreach (var child in node.AsArray())
+                {
+                    if (child is not null && HasExpandableValue(child))
+                        return true;
+                }
+                return false;
+            default:
+                return false;
+        }
+    }
+
     private static JsonNode ExpandNode(JsonNode node)
     {
         switch (node.GetValueKind())
         {
             case JsonValueKind.String:
-                return node.ToString().TryConvertToJsonNode(out var converted) ? converted : node;
+                // only swap the node out if the string actually parses as json. Anything else
+                // is already the value we want, so there is no need to rebuild it.
+                return node.ToString().TryParseToJsonNode(out var converted) ? converted : node;
             case JsonValueKind.Object:
                 var jsonObject = node.AsObject();
-                foreach (var key in jsonObject.Select(p => p.Key).ToList())
+
+                // the collection can't be modified while it is being enumerated, but expansion
+                // is the rare case - so only build a list once we actually have a change.
+                List<KeyValuePair<string, JsonNode>>? changes = null;
+
+                foreach (var property in jsonObject)
                 {
-                    var child = jsonObject[key];
-                    if (child is not null)
-                    {
-                        var expanded = ExpandNode(child);
-                        if (!ReferenceEquals(expanded, child))
-                            jsonObject[key] = expanded;
-                    }
+                    if (property.Value is null) continue;
+
+                    var expanded = ExpandNode(property.Value);
+                    if (ReferenceEquals(expanded, property.Value)) continue;
+
+                    (changes ??= []).Add(new(property.Key, expanded));
                 }
+
+                if (changes is not null)
+                {
+                    foreach (var change in changes)
+                        jsonObject[change.Key] = change.Value;
+                }
+
                 return jsonObject;
             case JsonValueKind.Array:
                 var jsonArray = node.AsArray();

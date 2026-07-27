@@ -44,7 +44,7 @@ public static class JsonTextOptions
     /// <summary>
     /// Options for JSON nodes (when parsing)
     /// </summary>
-    private static JsonNodeOptions _nodeOptions = new()
+    private static readonly JsonNodeOptions _nodeOptions = new()
     {
         PropertyNameCaseInsensitive = true,
     };
