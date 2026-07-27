@@ -28,5 +28,16 @@ public static class JsonArrayExtensions
     ///  returns array as a list of JsonObjects 
     /// </summary>
     public static IList<JsonObject> AsListOfJsonObjects(this JsonArray? array)
-        => array?.Where(x => x is not null).Select(x => x!.AsObject()).ToList() ?? [];
+    {
+        if (array is null) return [];
+
+        var items = new List<JsonObject>(array.Count);
+
+        foreach (var item in array)
+        {
+            if (item is not null) items.Add(item.AsObject());
+        }
+
+        return items;
+    }
 }
