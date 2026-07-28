@@ -36,8 +36,21 @@ dotnet test Jumoo.Json.slnx
 
 Package versions are managed centrally in
 [`Directory.Packages.props`](Directory.Packages.props); shared build and package metadata lives in
-[`Directory.Build.props`](Directory.Build.props). Restores are locked — if you change a dependency,
-commit the updated `packages.lock.json` files alongside it.
+[`Directory.Build.props`](Directory.Build.props).
+
+Restores are locked, so if you change a dependency you have to commit the regenerated lock files
+alongside it:
+
+```bash
+dotnet restore Jumoo.Json.slnx --force-evaluate
+```
+
+That updates all three `packages.lock.json` files in one go. It matters most when bumping Umbraco:
+`Umbraco.Cms.Web.Common` flows through the project reference into the test and benchmark projects
+as a `CentralTransitive` entry, so editing `Directory.Packages.props` alone leaves those two lock
+files stale and CI fails the locked restore with `NU1004`. Dependabot handles direct dependencies
+correctly but cannot fix the `CentralTransitive` ones, which is part of why Umbraco is excluded
+from it.
 
 ## Benchmarks
 
