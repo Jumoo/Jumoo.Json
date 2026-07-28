@@ -29,18 +29,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3
+        uses: gittools/actions/gitversion/setup@v4
         with:
           versionSpec: "5.x"
 
       - name: Determine version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v3
+        uses: gittools/actions/gitversion/execute@v4
         with:
           useConfigFile: true
           configFilePath: ./GitVersion.yml
@@ -56,9 +56,9 @@ jobs:
     needs: version
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
           cache: true
@@ -86,7 +86,7 @@ jobs:
       # NOTE: intentionally no `dotnet nuget push` here - this workflow builds a package
       # for review and does not release. Publishing is still a deliberate manual step.
       - name: Upload nuget package as build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nuget-build-output
           path: ${{ env.out_folder }}
