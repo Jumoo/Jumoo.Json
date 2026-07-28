@@ -4,6 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Umbraco is pinned deliberately. The version referenced here becomes the minimum
+    # for every downstream package, so it moves when we choose to move it - not on a
+    # weekly schedule. Note this also opts Umbraco out of dependabot security updates.
+    ignore:
+      - dependency-name: "Umbraco.*"
     groups:
       nuget-dependencies:
         patterns:
