@@ -94,10 +94,11 @@ Removing the Umbraco dependency has been investigated and **deliberately parked*
 splitting into `Jumoo.Json` + `Jumoo.Json.Umbraco`, and every consumer is an Umbraco package anyway,
 so the breaking change isn't worth it yet.
 
-**`JsonTextOptions.AddConverter` does not currently work.** It mutates `Converters` on options that
-`System.Text.Json` locks after first use, so it throws `InvalidOperationException` unless called
-before anything has serialized. Nothing calls it, which is why it has never surfaced. Fixing it
-means rebuilding the options instances rather than mutating them.
+**`JsonTextOptions.AddConverter` rebuilds the options rather than mutating them**, because
+`System.Text.Json` makes `JsonSerializerOptions` read-only the first time it is used — adding to
+`Converters` in place threw `InvalidOperationException` for anything registering after the first
+serialize. Two consequences: it is a startup-time call (each rebuild discards the cached type
+metadata), and anything holding an instance from an earlier `GetOptions()` call keeps the old one.
 
 ## Build and release
 

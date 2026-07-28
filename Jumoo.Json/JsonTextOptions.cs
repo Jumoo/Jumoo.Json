@@ -16,9 +16,14 @@ namespace Jumoo.Json;
 public static class JsonTextOptions
 {
     /// <summary>
+    ///  Guards the rebuild in <see cref="AddConverter"/> / <see cref="RemoveConverter"/>.
+    /// </summary>
+    private static readonly Lock _converterLock = new();
+
+    /// <summary>
     /// Default options for JSON serialization and deserialization.
     /// </summary>
-    private static readonly JsonSerializerOptions _defaultOptions = new()
+    private static volatile JsonSerializerOptions _defaultOptions = new()
     {
         WriteIndented = true,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
@@ -41,7 +46,7 @@ public static class JsonTextOptions
     /// <summary>
     /// Flat options for JSON serialization and deserialization.
     /// </summary>
-    private static readonly JsonSerializerOptions _flatOptions = new(_defaultOptions)
+    private static volatile JsonSerializerOptions _flatOptions = new(_defaultOptions)
     {
         WriteIndented = false,
     };
@@ -66,23 +71,62 @@ public static class JsonTextOptions
     public static JsonNodeOptions GetNodeOptions() => _nodeOptions;
 
     /// <summary>
-    ///  add another convert to the default list of converters. 
+    ///  add another convert to the default list of converters.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    ///  Rebuilds the options rather than adding to them in place. JsonSerializerOptions
+    ///  makes itself read-only the first time it is used, so mutating Converters threw
+    ///  InvalidOperationException for anything registering after the first serialize.
+    /// </para>
+    /// <para>
+    ///  Rebuilding discards the cached type metadata, so treat this as a startup call -
+    ///  it isn't something to do per operation. Anything holding an options instance from
+    ///  an earlier <see cref="GetOptions"/> call keeps the instance it already has.
+    /// </para>
+    /// </remarks>
     public static void AddConverter(JsonConverter converter)
     {
-        if (_defaultOptions.Converters.Contains(converter) is false)
-            _defaultOptions.Converters.Add(converter);
+        ArgumentNullException.ThrowIfNull(converter);
 
-        if (_flatOptions.Converters.Contains(converter) is false)
-            _flatOptions.Converters.Add(converter);
+        lock (_converterLock)
+        {
+            if (_defaultOptions.Converters.Contains(converter)) return;
+
+            var updatedDefault = new JsonSerializerOptions(_defaultOptions);
+            updatedDefault.Converters.Add(converter);
+
+            var updatedFlat = new JsonSerializerOptions(_flatOptions);
+            updatedFlat.Converters.Add(converter);
+
+            // swap only once both have been built, so a failure leaves the pair consistent.
+            _defaultOptions = updatedDefault;
+            _flatOptions = updatedFlat;
+        }
     }
 
     /// <summary>
     /// Removes a converter from the default list of converters.
     /// </summary>
+    /// <remarks>
+    ///  Rebuilds the options, for the same reason as <see cref="AddConverter"/>.
+    /// </remarks>
     public static void RemoveConverter(JsonConverter converter)
     {
-        _defaultOptions.Converters.Remove(converter);
-        _flatOptions.Converters.Remove(converter);
+        ArgumentNullException.ThrowIfNull(converter);
+
+        lock (_converterLock)
+        {
+            if (_defaultOptions.Converters.Contains(converter) is false) return;
+
+            var updatedDefault = new JsonSerializerOptions(_defaultOptions);
+            updatedDefault.Converters.Remove(converter);
+
+            var updatedFlat = new JsonSerializerOptions(_flatOptions);
+            updatedFlat.Converters.Remove(converter);
+
+            _defaultOptions = updatedDefault;
+            _flatOptions = updatedFlat;
+        }
     }
 }

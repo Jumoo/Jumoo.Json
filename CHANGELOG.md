@@ -24,6 +24,9 @@ Notable changes to `Jumoo.Json`. This library ships one branch per Umbraco major
 
 ### Fixed
 
+- `JsonTextOptions.AddConverter` / `RemoveConverter` threw `InvalidOperationException` whenever they
+  were called after anything had already been serialized, because `JsonSerializerOptions` makes
+  itself read-only on first use. They now rebuild the options instead of mutating them.
 - `TryConvertToJsonNode` returned `false` for any string containing a quote, backslash or control
   character. It built its fallback node with `JsonNode.Parse($"\"{value}\"")`, which produced
   invalid JSON for those inputs.
