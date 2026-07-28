@@ -61,9 +61,15 @@ namespace Jumoo.Json.Tests
         [Fact]
         public void AddConverter_Succeeds_AfterOptionsHaveAlreadyBeenUsed()
         {
-            // Arrange - force a serialize so the shared options lock themselves
-            _ = new Marker { Value = "warm up" }.SerializeJsonString(false);
-            Assert.True(JsonTextOptions.GetOptions().IsReadOnly);
+            // Arrange - serialize through both option sets so both lock themselves. Warming
+            // only one made this pass or fail depending on what ran before it, since a
+            // preceding Add/Remove in this class swaps in fresh, unused instances.
+            var warmUp = new Marker { Value = "warm up" };
+            _ = warmUp.SerializeJsonString(indent: true);
+            _ = warmUp.SerializeJsonString(indent: false);
+
+            Assert.True(JsonTextOptions.GetOptions(indent: true).IsReadOnly);
+            Assert.True(JsonTextOptions.GetOptions(indent: false).IsReadOnly);
 
             var converter = new MarkerConverter();
 
