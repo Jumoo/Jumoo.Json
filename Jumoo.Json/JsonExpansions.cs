@@ -3,6 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Expanding JSON that has been stored as an escaped string inside another JSON value.
+/// </summary>
 public static class JsonExpansions
 {
     /// <summary>

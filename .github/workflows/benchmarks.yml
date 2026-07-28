@@ -1,0 +1,49 @@
+name: Benchmarks
+
+permissions:
+  contents: read
+
+# A full run is too slow to sit on every PR, so this is manual - run it before cutting
+# a release, or when a change is expected to move the numbers. Compare the output
+# against the table in Jumoo.Json.Benchmarks/README.md.
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: "BenchmarkDotNet filter (e.g. *Expansion*)"
+        required: false
+        default: "*"
+
+env:
+  config: Release
+  benchmark_project: ./Jumoo.Json.Benchmarks/Jumoo.Json.Benchmarks.csproj
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: restore
+        run: dotnet restore ${{ env.benchmark_project }} --locked-mode
+
+      - name: run benchmarks
+        run: >
+          dotnet run -c ${{ env.config }} --project ${{ env.benchmark_project }} --no-restore --
+          --filter '${{ inputs.filter }}'
+          --artifacts ./benchmark-results
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: ./benchmark-results/results
+          if-no-files-found: warn

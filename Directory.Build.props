@@ -1,0 +1,48 @@
+<Project>
+
+	<!--
+		NOTE: adding this file stops any Directory.Build.props further up the disk from
+		applying. There was one at D:\Source\directory.build.props setting NuGetAuditMode,
+		which applied to local builds but never to CI - that setting is carried over below
+		so local and CI builds agree.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<NuGetAuditMode>direct</NuGetAuditMode>
+	</PropertyGroup>
+
+	<!-- shared package metadata, so the values can't drift between projects -->
+	<PropertyGroup>
+		<VersionPrefix>18.0.1</VersionPrefix>
+		<Authors>Jumoo</Authors>
+		<Company>Jumoo</Company>
+		<Copyright>Jumoo @ 2025-2026</Copyright>
+
+		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+		<PackageProjectUrl>https://jumoo.com</PackageProjectUrl>
+		<PackageTags>Umbraco;json;system.text.json</PackageTags>
+
+		<RepositoryUrl>https://github.com/Jumoo/Jumoo.Json</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- ship the /// comments so consumers get intellisense -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+		<!-- don't append the build onto the version -->
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+		<!-- lock files, so a transitive update can't change a build without a commit -->
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	</PropertyGroup>
+
+</Project>

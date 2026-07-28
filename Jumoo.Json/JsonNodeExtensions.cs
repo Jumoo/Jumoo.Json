@@ -3,6 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Parsing, validating and serializing <see cref="JsonNode"/> values.
+/// </summary>
 public static class JsonNodeExtensions
 {
     /// <summary>

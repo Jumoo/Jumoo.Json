@@ -16,6 +16,9 @@ namespace Jumoo.Json.Resolvers;
 /// </remarks>
 public class OrderedPropertiesJsonResolver : DefaultJsonTypeInfoResolver
 {
+    /// <summary>
+    ///  Gets the type info, with object properties ordered by name.
+    /// </summary>
     public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {
         JsonTypeInfo typeInfo = base.GetTypeInfo(type, options);

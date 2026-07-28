@@ -1,6 +1,10 @@
 using System.Text.Json;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Comparing objects by their JSON representation.
+/// </summary>
 public static class JsonComparisons
 {
     /// <summary>

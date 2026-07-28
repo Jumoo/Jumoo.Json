@@ -1,4 +1,8 @@
 ﻿namespace Jumoo.Json;
+
+/// <summary>
+///  Normalising a JSON string into a safely escaped, flat form.
+/// </summary>
 public static class JsonEscapeExtensions
 {
     /// <summary>
