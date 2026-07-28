@@ -5,13 +5,13 @@
 
   <!-- umbraco -->
   <ItemGroup>
-    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="18.0.0" />
+    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="18.0.2" />
   </ItemGroup>
 
   <!-- testing -->
   <ItemGroup>
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
