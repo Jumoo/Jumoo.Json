@@ -114,4 +114,26 @@ public static class JsonNodeExtensions
     public static JsonNode? ToJsonNode(this string? value)
         => TryParseToJsonNode(value, out var node) ? node : default;
 
+    /// <summary>
+    /// Converts a string to a JSON node, or null if it cannot be converted.
+    /// </summary>
+    /// <remarks>
+    ///  Unlike <see cref="ToJsonNode(string?)"/> a value that isn't json comes back as a string
+    ///  node rather than null.
+    /// </remarks>
+    public static JsonNode? ConvertToJsonNode(this string value)
+        => TryConvertToJsonNode(value, out var node) ? node : default;
+
+    /// <summary>
+    /// Converts an object to a JSON node, or null if it cannot be converted.
+    /// </summary>
+    public static JsonNode? ConvertToJsonNode(this object value)
+        => TryConvertToJsonNode(value, out var node) ? node : default;
+
+    /// <summary>
+    ///  Checks if the value is a non-string JSON value (array, object, number, boolean).
+    /// </summary>
+    public static bool IsNonStringJsonValue(this object? value)
+        => value is JsonElement { ValueKind: not JsonValueKind.String and not JsonValueKind.Undefined }
+           || value is JsonArray or JsonObject;
 }

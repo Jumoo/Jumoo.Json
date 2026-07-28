@@ -86,6 +86,45 @@ namespace Jumoo.Json.Tests
         }
 
         [Fact]
+        public void GetPropertyAsBool_ReturnsTheDefault_ForMissingProperty()
+        {
+            // Arrange
+            var jsonObject = JsonNode.Parse("{\"key\":true}")!.AsObject();
+
+            // Act
+            var result = jsonObject.GetPropertyAsBool("nonExistentKey", true);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void GetPropertyAsBool_ReturnsTheDefault_ForUnparsableProperty()
+        {
+            // Arrange
+            var jsonObject = JsonNode.Parse("{\"key\":\"notABoolean\"}")!.AsObject();
+
+            // Act
+            var result = jsonObject.GetPropertyAsBool("key", true);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void GetPropertyAsBool_ReturnsTheValue_AndNotTheDefault_WhenThePropertyIsABool()
+        {
+            // Arrange
+            var jsonObject = JsonNode.Parse("{\"key\":false}")!.AsObject();
+
+            // Act
+            var result = jsonObject.GetPropertyAsBool("key", true);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public void GetPropertyValueOrDefault_ReturnsValue_ForValidProperty()
         {
             // Arrange
