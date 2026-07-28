@@ -58,16 +58,28 @@ public static class JsonPropertyExtensions
     ///  handing the result to bool.TryParse.
     /// </remarks>
     public static bool GetPropertyAsBool(this JsonObject? obj, string propertyName)
+        => obj.GetPropertyAsBool(propertyName, false);
+
+    /// <summary>
+    /// Tries to get a property value as a Bool Value, with the default to use when it is missing
+    /// or isn't something that can be read as a bool.
+    /// </summary>
+    /// <remarks>
+    ///  Checks the value kind first. ToString() on anything that isn't a string serialises
+    ///  the whole subtree through an indented writer, which is a lot of work to do before
+    ///  handing the result to bool.TryParse.
+    /// </remarks>
+    public static bool GetPropertyAsBool(this JsonObject? obj, string propertyName, bool defaultValue)
     {
         if (obj?.TryGetPropertyValue(propertyName, out var value) is not true || value is null)
-            return false;
+            return defaultValue;
 
         return value.GetValueKind() switch
         {
             JsonValueKind.True => true,
             JsonValueKind.False => false,
-            JsonValueKind.String => bool.TryParse(value.ToString(), out var result) && result,
-            _ => false
+            JsonValueKind.String => bool.TryParse(value.ToString(), out var result) ? result : defaultValue,
+            _ => defaultValue
         };
     }
 

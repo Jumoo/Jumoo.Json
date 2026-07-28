@@ -46,4 +46,21 @@ public static class JsonObjectExtensions
     /// </summary>
     public static JsonObject? ConvertToJsonObject(this object? value)
         => value.TryConvertToJsonObject(out var node) is true ? node : default;
+
+    /// <summary>
+    ///  Sets a property on the object, removing it instead when the value is null.
+    /// </summary>
+    /// <remarks>
+    ///  Keeps null values out of the serialized output without the caller having to branch.
+    /// </remarks>
+    public static void AddOrRemoveIfNull<TNode>(this JsonObject? jsonObject, string property, TNode? value)
+        where TNode : JsonNode
+    {
+        if (jsonObject is null) return;
+
+        if (value is not null)
+            jsonObject[property] = value;
+        else
+            jsonObject.Remove(property);
+    }
 }

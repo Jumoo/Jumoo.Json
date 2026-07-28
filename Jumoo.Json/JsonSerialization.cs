@@ -212,7 +212,7 @@ public static class JsonSerialization
     /// <summary>
     /// Tries to convert an object to a TObject item.
     /// </summary>
-    public static bool TryGetValueAs<TObject>(this object value, [NotNullWhen(true)] out TObject? result)
+    public static bool TryGetValueAs<TObject>(this object? value, [NotNullWhen(true)] out TObject? result)
     {
         result = default;
         if (value is null) return false;
@@ -242,6 +242,49 @@ public static class JsonSerialization
         }
 
         var attempt = value.TryConvertTo<TObject>();
+        if (attempt.Success is false || attempt.Result is null) return false;
+
+        result = attempt.Result;
+        return true;
+    }
+
+    /// <summary>
+    /// Tries to convert an object to the requested runtime type.
+    /// </summary>
+    /// <remarks>
+    ///  Companion to the generic <c>TryGetValueAs&lt;TObject&gt;</c> for callers that
+    ///  only have a <see cref="Type"/> - property setters and the like. Same JsonElement pre-check.
+    /// </remarks>
+    public static bool TryGetValueAs(this object? value, Type targetType, [NotNullWhen(true)] out object? result)
+    {
+        result = default;
+        if (value is null) return false;
+
+        // already the type we want - no need to go near a converter.
+        if (targetType.IsInstanceOfType(value))
+        {
+            result = value;
+            return true;
+        }
+
+        // Umbraco's TryConvertTo turns a JsonElement into a string cleanly, but throws
+        // (and swallows) an InvalidCastException for JsonElement -> value type. Do the
+        // value-type conversion with System.Text.Json first to avoid that noise; string
+        // and anything STJ can't handle fall through to TryConvertTo below.
+        if (value is JsonElement element && targetType != typeof(string))
+        {
+            try
+            {
+                result = element.Deserialize(targetType, JsonTextOptions.GetOptions());
+                if (result is not null) return true;
+            }
+            catch
+            {
+                // not something STJ could convert directly - fall back to TryConvertTo below.
+            }
+        }
+
+        var attempt = value.TryConvertTo(targetType);
         if (attempt.Success is false || attempt.Result is null) return false;
 
         result = attempt.Result;

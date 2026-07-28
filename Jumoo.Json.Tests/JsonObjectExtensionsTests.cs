@@ -1,3 +1,5 @@
+using System.Text.Json.Nodes;
+
 namespace Jumoo.Json.Tests
 {
     public class JsonObjectExtensionsTests
@@ -140,6 +142,42 @@ namespace Jumoo.Json.Tests
 
             // Assert
             Assert.Null(resultObject);
+        }
+
+        [Fact]
+        public void AddOrRemoveIfNull_SetsTheProperty_WhenTheValueIsNotNull()
+        {
+            // Arrange
+            var jsonObject = JsonNode.Parse("{\"key\":\"value\"}")!.AsObject();
+
+            // Act
+            jsonObject.AddOrRemoveIfNull("added", JsonValue.Create("newValue"));
+
+            // Assert
+            Assert.Equal("newValue", jsonObject["added"]!.ToString());
+        }
+
+        [Fact]
+        public void AddOrRemoveIfNull_RemovesTheProperty_WhenTheValueIsNull()
+        {
+            // Arrange
+            var jsonObject = JsonNode.Parse("{\"key\":\"value\"}")!.AsObject();
+
+            // Act
+            jsonObject.AddOrRemoveIfNull<JsonNode>("key", null);
+
+            // Assert
+            Assert.False(jsonObject.ContainsKey("key"));
+        }
+
+        [Fact]
+        public void AddOrRemoveIfNull_DoesNothing_ForANullObject()
+        {
+            // Arrange
+            JsonObject? jsonObject = null;
+
+            // Act / Assert - the point is that this doesn't throw.
+            jsonObject.AddOrRemoveIfNull("key", JsonValue.Create("value"));
         }
     }
 }
