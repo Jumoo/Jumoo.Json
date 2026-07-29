@@ -124,6 +124,7 @@ Work on a branch off `v{major}/main` and merge back via PR.
 | `dotnet-build.yml` | PR to `*/main` | restore `--locked-mode`, build, test, upload coverage |
 | `package-build.yml` | push to `*/main`, or manual | GitVersion, build, test, pack, upload `.nupkg` artifact |
 | `benchmarks.yml` | manual only | full benchmark run, uploads results |
+| `codeql.yml` | PR + push to `*/main`, weekly | code scanning for `csharp` and `actions` |
 
 `package-build.yml` intentionally has **no `dotnet nuget push`** — it produces an artifact for
 review, and publishing stays a deliberate manual step. `dist/build-package.ps1` is the older local
@@ -177,6 +178,8 @@ contains both `Jumoo.Json.dll` and `Jumoo.Json.xml`.
 
 ## Repository constraints
 
-Private repo without GitHub Pro, so **branch protection and CodeQL are unavailable** (both return
-403). "PR must pass CI" is a convention, not something enforced — check `gh pr checks <n>` before
-merging.
+The repository is public, which is what makes code scanning and branch protection available at all
+— both returned 403 while it was private on this plan.
+
+CodeQL uses `build-mode: none`, so it reads the source without compiling. That means it needs no SDK
+setup, no restore, and doesn't interact with the locked-mode restore the other workflows use.
