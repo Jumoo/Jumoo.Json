@@ -183,3 +183,11 @@ The repository is public, which is what makes code scanning and branch protectio
 
 CodeQL uses `build-mode: none`, so it reads the source without compiling. That means it needs no SDK
 setup, no restore, and doesn't interact with the locked-mode restore the other workflows use.
+
+`v18/main` is protected: a PR is required (0 approvals, so you can merge your own), `build-project`
+must pass, and force pushes and branch deletion are blocked. `v17/main` is not protected.
+
+**Administrators are exempt** (`enforce_admins: false`), which is a deliberate escape hatch for
+things like the broken release pipeline — but it does mean the rules constrain non-admin
+contributors rather than the repo owner. Treat "PR with green checks" as the working agreement, not
+something the settings will enforce on you.
