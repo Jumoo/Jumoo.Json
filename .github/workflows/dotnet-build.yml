@@ -1,0 +1,55 @@
+name: PR Project Build and Test
+
+permissions:
+  contents: read
+
+# NOTE: branches must match the "v{major}/main" convention - the previous workflow
+# targeted "main", which is not the default branch, so it never ran.
+on:
+  pull_request:
+    branches: [ "*/main" ]
+    paths-ignore:
+      - "**.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  config: Release
+  solution_name: ./Jumoo.Json.slnx
+  test_project: ./Jumoo.Json.Tests/Jumoo.Json.Tests.csproj
+
+jobs:
+  build-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: restore
+        run: dotnet restore ${{ env.solution_name }} --locked-mode
+
+      - name: build
+        run: dotnet build ${{ env.solution_name }} -c ${{ env.config }} --no-restore -p:ContinuousIntegrationBuild=true
+
+      - name: test
+        run: >
+          dotnet test ${{ env.test_project }}
+          -c ${{ env.config }} --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory ./coverage
+
+      - name: upload coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: ./coverage
+          if-no-files-found: warn

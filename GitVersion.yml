@@ -1,0 +1,14 @@
+next-version: 17.0.2
+assembly-versioning-scheme: MajorMinorPatch
+mode: ContinuousDeployment
+branches:
+  main:
+    mode: ContinuousDeployment
+    tag: ""
+    # this repo branches per Umbraco major - v18/main, v17/main, and so on
+    regex: ^v[0-9]+\/main$
+  pull-request:
+    mode: ContinuousDeployment
+ignore:
+  sha: []
+merge-message-formats: {}
