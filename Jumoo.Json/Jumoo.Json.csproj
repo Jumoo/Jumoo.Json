@@ -1,16 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
-	
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- shared settings (target framework, package metadata, symbols, docs) live in
+	     ../Directory.Build.props - only what is specific to this package is here.
+	     Package versions are in ../Directory.Packages.props. -->
+
 	<PropertyGroup>
 		<PackageId>Jumoo.Json</PackageId>
-		<Copyright>Jumoo 2025</Copyright>
-		<ProjectUrl>https://jumoo.com</ProjectUrl>
 		<Description>JSON Helper libraries for Jumoo Umbraco packages</Description>
-		<Authors>Jumoo</Authors>
 
 		<PackageReleaseNotes>
 			v1 - Initial release, Umbraco 16 support.
@@ -18,13 +14,7 @@
 		</PackageReleaseNotes>
 
 		<PackageIcon>icon.png</PackageIcon>
-		<PackageReadme>readme.md</PackageReadme>
-		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
-		<NuGetAuditMode>direct</NuGetAuditMode>
-
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,6 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="17.3.2" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" />
 	</ItemGroup>
+
 </Project>
