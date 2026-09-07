@@ -1,0 +1,11 @@
+# Unlike the connector repos, this is a standalone shared library (used by both uSync.Complete
+# and Translation Manager) rather than part of one product's issue silo, so blank issues stay
+# on and there's no redirect to a product-specific tracker.
+blank_issues_enabled: true
+
+contact_links:
+  # /security/policy rather than a blob url - it resolves whatever the default branch
+  # is, so it survives the branch being renamed per Umbraco major.
+  - name: Report a security issue
+    url: https://github.com/Jumoo/Jumoo.Json/security/policy
+    about: Please do not report security problems in public. Email info@jumoo.co.uk instead.
