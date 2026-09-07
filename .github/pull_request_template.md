@@ -9,9 +9,7 @@
 
 ## Checklist
 
-- [ ] `dotnet test Jumoo.Json.slnx` passes
-- [ ] Behaviour changes to public API are called out above and covered by a test
-- [ ] `CHANGELOG.md` updated under **Unreleased**
-- [ ] If a dependency changed, `dotnet restore Jumoo.Json.slnx --force-evaluate` was run and all
-      updated `packages.lock.json` files are committed
-- [ ] If this could move performance, benchmarks were run and the numbers are in the description
+- [ ] `dotnet build Jumoo.Json.slnx -c Release` is clean
+- [ ] `dotnet test Jumoo.Json.Tests/Jumoo.Json.Tests.csproj -c Release` passes
+- [ ] If a dependency version changed, `dotnet restore --force-evaluate` was run and the
+      updated `packages.lock.json` is committed
