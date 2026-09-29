@@ -111,8 +111,8 @@ that setting is carried over explicitly so local and CI builds agree.
 
 ### Branching
 
-One long-lived branch per Umbraco major, named `v{major}/main`. **`v18/main` is the default branch,
-not `main`.** Workflows trigger on `*/main` so new major branches are picked up automatically — a
+One long-lived branch per Umbraco major, named `v{major}/main`. **`v17/main` is the default branch,
+not `main` and not `v18/main`**, so PRs opened from this clone need `--base v18/main`. Workflows trigger on `*/main` so new major branches are picked up automatically — a
 workflow targeting `main` will silently never run.
 
 Work on a branch off `v{major}/main` and merge back via PR.
