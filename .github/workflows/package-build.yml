@@ -33,6 +33,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      # global.json applies to every dotnet command, including the tool install below, and
+      # runners don't carry prerelease SDKs. GitVersion 5 itself runs on the .NET 8 runtime.
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+          global-json-file: global.json
+
       - name: Install GitVersion
         # pinned to v3 on purpose: v4 of this action requires GitVersion >= 6.2, and our
         # GitVersion.yml is still v5 schema (mode / tag rather than deployment-mode / label).
