@@ -1,7 +1,13 @@
 # Changelog
 
 Notable changes to `Jumoo.Json`. This library ships one branch per Umbraco major
-(`v18/main`, `v17/main`, …), so versions track the Umbraco major they target.
+(`v19/main`, `v18/main`, `v17/main`, …), so versions track the Umbraco major they target.
+
+## 19.0.0
+
+### Changed
+
+- Targets `net11.0` and Umbraco 19 (`19.0.0-beta1`).
 
 ## 18.0.3
 
