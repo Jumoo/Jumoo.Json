@@ -6,7 +6,7 @@ This library helps us maintain some consistency when running with `System.Text.J
 Newtonsoft. It is a support library for Jumoo's Umbraco packages rather than something intended for
 general use — but we're not stopping you.
 
-Published as `Jumoo.Json`, targeting `net10.0` / Umbraco 18.
+Published as `Jumoo.Json`, targeting `net11.0` / Umbraco 19.
 
 ## What's in it
 
@@ -65,7 +65,7 @@ Quote the `*` — in bash an unquoted `*` is expanded to filenames before Benchm
 
 ## Branching
 
-One long-lived branch per Umbraco major, named `v{major}/main` — `v18/main` is current and is the
+One long-lived branch per Umbraco major, named `v{major}/main` — `v19/main` is current; `v17/main` is the
 default branch. CI triggers on `*/main`, so new major branches are picked up automatically.
 
 Work happens on a branch off `v{major}/main` and merges back via PR.

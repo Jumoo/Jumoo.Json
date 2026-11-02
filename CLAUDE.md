@@ -112,7 +112,7 @@ that setting is carried over explicitly so local and CI builds agree.
 ### Branching
 
 One long-lived branch per Umbraco major, named `v{major}/main`. **`v17/main` is the default branch,
-not `main` and not `v18/main`**, so PRs opened from this clone need `--base v18/main`. Workflows trigger on `*/main` so new major branches are picked up automatically — a
+not `main` and not `v18/main`**, so PRs opened from this clone need `--base v19/main`. Workflows trigger on `*/main` so new major branches are picked up automatically — a
 workflow targeting `main` will silently never run.
 
 Work on a branch off `v{major}/main` and merge back via PR.
@@ -173,7 +173,7 @@ readme and no project URL because the csproj used `ProjectUrl` and `PackageReadm
 dotnet pack Jumoo.Json/Jumoo.Json.csproj -c Release -o ./pack-check
 ```
 
-Unzip the `.nupkg` and check the generated `.nuspec` has what you expect, and that `lib/net10.0/`
+Unzip the `.nupkg` and check the generated `.nuspec` has what you expect, and that `lib/net11.0/`
 contains both `Jumoo.Json.dll` and `Jumoo.Json.xml`.
 
 ## Repository constraints

@@ -7,7 +7,8 @@ major, and to the previous one where the issue is serious and the fix is practic
 
 | Version | Branch | Supported |
 | --- | --- | --- |
-| 18.x | `v18/main` | Yes |
+| 19.x | `v19/main` | Yes |
+| 18.x | `v18/main` | Security fixes only |
 | 17.x | `v17/main` | Security fixes only |
 | 16.x and earlier | — | No |
 
