@@ -5,7 +5,7 @@
 
   <!-- umbraco -->
   <ItemGroup>
-    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="19.0.0-beta1" />
+    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="19.0.0-rc1" />
   </ItemGroup>
 
   <!-- testing -->
