@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -56,8 +57,9 @@ public static class JsonNodeExtensions
     /// </summary>
     public static bool TryParseToJsonNode(this object? value, [NotNullWhen(true)] out JsonNode? node)
     {
-        node = default;
+        if (TryParseJsonContainer(value, out node)) return true;
 
+        node = default;
         if (value?.TryGetValueAs<string>(out var stringValue) is true)
             return stringValue.TryParseToJsonNode(out node);
 
@@ -101,6 +103,8 @@ public static class JsonNodeExtensions
     /// </summary>
     public static bool TryConvertToJsonNode(this object value, [NotNullWhen(true)] out JsonNode? node)
     {
+        if (TryParseJsonContainer(value, out node)) return true;
+
         node = default;
         if (value.TryGetValueAs<string>(out var stringValue) is true)
             return stringValue.TryConvertToJsonNode(out node);
@@ -136,4 +140,53 @@ public static class JsonNodeExtensions
     public static bool IsNonStringJsonValue(this object? value)
         => value is JsonElement { ValueKind: not JsonValueKind.String and not JsonValueKind.Undefined }
            || value is JsonArray or JsonObject;
+
+    /// <summary>
+    ///  Re-parses a JsonObject, JsonArray, or an object/array JsonElement into a new node.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///  The string route (TryGetValueAs&lt;string&gt;) calls ToString() on these, which writes the
+    ///  whole tree out as an indented UTF-16 string just to parse it straight back. Writing compact
+    ///  UTF-8 (or, for a JsonElement, reading its raw bytes in place) gives the same node.
+    /// </para>
+    /// <para>
+    ///  It still parses rather than cloning: the result is a fresh, parentless node with the
+    ///  library's node options, the same as the string route returned.
+    /// </para>
+    /// </remarks>
+    private static bool TryParseJsonContainer(object? value, [NotNullWhen(true)] out JsonNode? node)
+    {
+        node = default;
+
+        try
+        {
+            switch (value)
+            {
+                case JsonObject or JsonArray:
+                    using (var buffer = new PooledByteBufferWriter())
+                    {
+                        using (var writer = new Utf8JsonWriter(buffer))
+                        {
+                            ((JsonNode)value).WriteTo(writer);
+                        }
+
+                        node = JsonNode.Parse(buffer.WrittenSpan, JsonTextOptions.GetNodeOptions());
+                    }
+                    return node is not null;
+
+                case JsonElement { ValueKind: JsonValueKind.Object or JsonValueKind.Array } element:
+                    node = JsonNode.Parse(JsonMarshal.GetRawUtf8Value(element), JsonTextOptions.GetNodeOptions());
+                    return node is not null;
+
+                default:
+                    return false;
+            }
+        }
+        catch
+        {
+            node = default;
+            return false;
+        }
+    }
 }
