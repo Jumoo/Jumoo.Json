@@ -3,6 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Extensions for getting <see cref="JsonObject"/> values out of strings and objects.
+/// </summary>
 public static class JsonObjectExtensions
 {
     /// <summary>
@@ -25,16 +29,10 @@ public static class JsonObjectExtensions
     {
         result = default;
         if (value is null || value.TryConvertToJsonNode(out var node) is false) return false;
+        if (node.GetValueKind() is not JsonValueKind.Object) return false;
 
-        try
-        {
-            result = node.AsObject();
-            return result is not null;
-        }
-        catch
-        {
-            return false;
-        }
+        result = node.AsObject();
+        return result is not null;
     }
 
     /// <summary>
@@ -48,4 +46,21 @@ public static class JsonObjectExtensions
     /// </summary>
     public static JsonObject? ConvertToJsonObject(this object? value)
         => value.TryConvertToJsonObject(out var node) is true ? node : default;
+
+    /// <summary>
+    ///  Sets a property on the object, removing it instead when the value is null.
+    /// </summary>
+    /// <remarks>
+    ///  Keeps null values out of the serialized output without the caller having to branch.
+    /// </remarks>
+    public static void AddOrRemoveIfNull<TNode>(this JsonObject? jsonObject, string property, TNode? value)
+        where TNode : JsonNode
+    {
+        if (jsonObject is null) return;
+
+        if (value is not null)
+            jsonObject[property] = value;
+        else
+            jsonObject.Remove(property);
+    }
 }
