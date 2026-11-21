@@ -1,4 +1,4 @@
-# Jumoo.Json.Benchmarks
+﻿# Jumoo.Json.Benchmarks
 
 Allocation and throughput benchmarks for the core library.
 
@@ -50,6 +50,22 @@ Measured on .NET 10.0.10, Intel Core Ultra 7 265, ShortRun job (3 warmup / 3 ite
 | `AsListOfJsonObjects` | 856 ns → **404 ns** | 2,736 B → 2,616 B |
 | `TryGetValueAs_StringToString` | 12.5 ns → **2.2 ns** | 0 B → 0 B |
 
+### Object overloads with a node or element (v17 follow-up)
+
+`TryConvertToJsonNode(object)` / `TryParseToJsonNode(object)` used to send a `JsonNode` or
+`JsonElement` through `ToString()`, an indented UTF-16 copy of the whole payload, before parsing
+it back. They now write compact UTF-8 (or read a `JsonElement`'s raw bytes in place) and parse
+that. `ConversionBenchmarks`, LargePlain fixture, same machine and job as above:
+
+| Benchmark | Time before → after | Allocated before → after |
+| --- | --- | --- |
+| `TryConvertToJsonNode_FromJsonNode_Large` | 314.8 μs → **193.2 μs** | 829 KB → **313 KB** |
+| `TryParseToJsonNode_FromJsonNode_Large` | 347.2 μs → **191.5 μs** | 829 KB → **313 KB** |
+| `TryConvertToJsonNode_FromJsonElement_Large` | 163.6 μs → **118.9 μs** | 719 KB → **313 KB** |
+| `TryConvertToJsonNode_FromString_Large` (for reference) | 129.9 μs → 123.4 μs | 313 KB → 313 KB |
+
+A node or element now costs what parsing its string costs.
+
 `IsJsonEqual` and `IsValidJsonString` also dropped from ~196 and ~92 Gen2 collections per 1000
 operations to zero — those were large object heap allocations.
 
@@ -65,3 +81,4 @@ Worth recording so nobody re-optimises them expecting a win:
 | `GetPropertyAsString_*` | unchanged | the 48 B is `JsonElement.GetString()` materialising the string for the first time; the 1,040 B is the serialisation the method exists to perform |
 | `TryParseToJsonNode_Large` (unpadded) | unchanged | building the node graph dominates; the detection gate was never the cost here |
 | `Serialize_Large_Indented` / `_Flat` | unchanged | untouched - `TrySerializeToStream` is the faster path |
+| `ConvertStringToExpandedJson(String)_Large_*` | ~1% less allocated, time within noise | tried expanding the freshly parsed node in place (no clone, no read-only walk). Parsing the embedded strings dominates, so it was dropped |

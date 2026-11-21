@@ -1,4 +1,4 @@
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 
 using System.Text.Json.Nodes;
 
@@ -45,6 +45,14 @@ public class ExpansionBenchmarks
     [Benchmark]
     public string ConvertStringToExpandedJsonString_Large_Embedded()
         => JsonFixtures.LargeEmbedded.ConvertStringToExpandedJsonString();
+
+    [Benchmark]
+    public string ConvertStringToExpandedJsonString_Large_Plain()
+        => JsonFixtures.LargePlain.ConvertStringToExpandedJsonString();
+
+    [Benchmark]
+    public JsonNode? ConvertStringToExpandedJson_Large_Embedded()
+        => JsonFixtures.LargeEmbedded.ConvertStringToExpandedJson();
 
     [Benchmark]
     public string GetEscapedJsonValue_Large()
