@@ -248,5 +248,77 @@ namespace Jumoo.Json.Tests
             Assert.False(result);
             Assert.Equal(0, convertedValue);
         }
+
+        [Fact]
+        public void TryGetValueAs_Type_ReturnsTrue_ForConvertibleValue()
+        {
+            // Arrange
+            object value = "42";
+
+            // Act
+            var result = value.TryGetValueAs(typeof(int), out var convertedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(42, convertedValue);
+        }
+
+        [Fact]
+        public void TryGetValueAs_Type_ReturnsFalse_ForNonConvertibleValue()
+        {
+            // Arrange
+            object value = "notAnInt";
+
+            // Act
+            var result = value.TryGetValueAs(typeof(int), out var convertedValue);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(convertedValue);
+        }
+
+        [Fact]
+        public void TryGetValueAs_Type_ReturnsFalse_ForNullValue()
+        {
+            // Arrange
+            object? value = null;
+
+            // Act
+            var result = value.TryGetValueAs(typeof(int), out var convertedValue);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(convertedValue);
+        }
+
+        [Fact]
+        public void TryGetValueAs_Type_ReturnsTheValue_WhenItIsAlreadyTheType()
+        {
+            // Arrange
+            object value = new Uri("https://jumoo.com");
+
+            // Act
+            var result = value.TryGetValueAs(typeof(Uri), out var convertedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, convertedValue);
+        }
+
+        [Theory]
+        [InlineData("{\"value\":12}", typeof(int), 12)]
+        [InlineData("{\"value\":true}", typeof(bool), true)]
+        public void TryGetValueAs_Type_ConvertsAJsonElement(string json, Type type, object expected)
+        {
+            // Arrange
+            object value = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("value");
+
+            // Act
+            var result = value.TryGetValueAs(type, out var convertedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expected, convertedValue);
+        }
     }
 }

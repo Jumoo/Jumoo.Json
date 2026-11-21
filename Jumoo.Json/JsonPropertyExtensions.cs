@@ -3,6 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Reading properties off a <see cref="JsonObject"/> as specific types, without throwing.
+/// </summary>
 public static class JsonPropertyExtensions
 {
     /// <summary>
@@ -22,7 +26,8 @@ public static class JsonPropertyExtensions
                 {
                     { propertyName, propertyNode.ToString() }
                 },
-                _ => propertyNode.AsObject()
+                JsonValueKind.Object => propertyNode.AsObject(),
+                _ => null
             };
 
             return result is not null;
@@ -47,11 +52,36 @@ public static class JsonPropertyExtensions
     /// <summary>
     /// Tries to get a property value as a Bool Value
     /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="propertyName"></param>
-    /// <returns></returns>
+    /// <remarks>
+    ///  Checks the value kind first. ToString() on anything that isn't a string serialises
+    ///  the whole subtree through an indented writer, which is a lot of work to do before
+    ///  handing the result to bool.TryParse.
+    /// </remarks>
     public static bool GetPropertyAsBool(this JsonObject? obj, string propertyName)
-        => obj?.TryGetPropertyValue(propertyName, out var value) is true && bool.TryParse(value?.ToString(), out bool result) is true && result;
+        => obj.GetPropertyAsBool(propertyName, false);
+
+    /// <summary>
+    /// Tries to get a property value as a Bool Value, with the default to use when it is missing
+    /// or isn't something that can be read as a bool.
+    /// </summary>
+    /// <remarks>
+    ///  Checks the value kind first. ToString() on anything that isn't a string serialises
+    ///  the whole subtree through an indented writer, which is a lot of work to do before
+    ///  handing the result to bool.TryParse.
+    /// </remarks>
+    public static bool GetPropertyAsBool(this JsonObject? obj, string propertyName, bool defaultValue)
+    {
+        if (obj?.TryGetPropertyValue(propertyName, out var value) is not true || value is null)
+            return defaultValue;
+
+        return value.GetValueKind() switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.String => bool.TryParse(value.ToString(), out var result) ? result : defaultValue,
+            _ => defaultValue
+        };
+    }
 
     /// <summary>
     /// Tries to get a property value as a TResult Value
@@ -61,14 +91,16 @@ public static class JsonPropertyExtensions
         if (obj.TryGetPropertyValue(propertyName, out var value) is false || value is null)
             return defaultValue;
 
-        try
+        // TryGetValue is the non-throwing form of GetValue. A type mismatch is an ordinary
+        // outcome here (we hand back the default), so it shouldn't cost an exception.
+        if (value is JsonValue jsonValue
+            && jsonValue.TryGetValue<TResult>(out var result)
+            && result is not null)
         {
-            return value.GetValue<TResult>() ?? defaultValue;
+            return result;
         }
-        catch
-        {
-            return defaultValue;
-        }
+
+        return defaultValue;
     }
 
 

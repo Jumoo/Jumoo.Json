@@ -8,11 +8,6 @@
 		<PackageId>Jumoo.Json</PackageId>
 		<Description>JSON Helper libraries for Jumoo Umbraco packages</Description>
 
-		<PackageReleaseNotes>
-			v1 - Initial release, Umbraco 16 support.
-			v2 - Updated for Umbraco 17 support.
-		</PackageReleaseNotes>
-
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>

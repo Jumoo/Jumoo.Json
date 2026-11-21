@@ -5,6 +5,10 @@ using System.Text.Json.Nodes;
 using Umbraco.Extensions;
 
 namespace Jumoo.Json;
+
+/// <summary>
+///  Serializing and deserializing objects using the shared <see cref="JsonTextOptions"/>.
+/// </summary>
 public static class JsonSerialization
 {
     /// <summary>
@@ -13,7 +17,7 @@ public static class JsonSerialization
     public static bool TryDeserialize<TObject>(this string? value, [NotNullWhen(true)] out TObject? result)
     {
         result = default;
-        if (string.IsNullOrWhiteSpace(value)) return false;
+        if (value.LooksLikeJson() is false) return false;
 
         try
         {
@@ -32,7 +36,7 @@ public static class JsonSerialization
     public static bool TryDeserialize(this string? value, Type type, [NotNullWhen(true)] out object? result)
     {
         result = default;
-        if (string.IsNullOrWhiteSpace(value)) return false;
+        if (value.LooksLikeJson() is false) return false;
 
         try
         {
@@ -60,6 +64,116 @@ public static class JsonSerialization
     public static TObject? DeserializeJson<TObject>(this string? value)
         => TryDeserialize<TObject>(value, out var result) ? result : default;
 
+
+    /// <summary>
+    /// Tries to deserialize utf8 JSON bytes to an object of type TObject.
+    /// </summary>
+    /// <remarks>
+    ///  Prefer this over the string overloads when the source is already utf8 (a file, a
+    ///  response body). The string form has to be transcoded back to utf8 to be parsed,
+    ///  so the string itself is pure overhead.
+    /// </remarks>
+    public static bool TryDeserialize<TObject>(this ReadOnlySpan<byte> utf8, [NotNullWhen(true)] out TObject? result)
+    {
+        result = default;
+        if (utf8.LooksLikeJson() is false) return false;
+
+        try
+        {
+            result = JsonSerializer.Deserialize<TObject>(utf8, JsonTextOptions.GetOptions());
+            return result is not null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to deserialize a stream of utf8 JSON to an object of type TObject.
+    /// </summary>
+    public static bool TryDeserialize<TObject>(this Stream stream, [NotNullWhen(true)] out TObject? result)
+    {
+        result = default;
+        if (stream is null) return false;
+
+        try
+        {
+            result = JsonSerializer.Deserialize<TObject>(stream, JsonTextOptions.GetOptions());
+            return result is not null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Deserializes a stream of utf8 JSON to an object of type TObject.
+    /// </summary>
+    public static async Task<TObject?> DeserializeJsonAsync<TObject>(this Stream stream, CancellationToken cancellationToken = default)
+    {
+        if (stream is null) return default;
+
+        try
+        {
+            return await JsonSerializer.DeserializeAsync<TObject>(
+                stream, JsonTextOptions.GetOptions(), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Serializes an object as utf8 JSON straight into a stream.
+    /// </summary>
+    /// <remarks>
+    ///  Avoids building the whole document as a string first, which for large values meant a
+    ///  large object heap allocation just to hand the bytes straight back out again.
+    /// </remarks>
+    public static bool TrySerializeToStream(this object? value, Stream stream, bool indent = true)
+    {
+        if (value is null || stream is null) return false;
+
+        try
+        {
+            JsonSerializer.Serialize(stream, value, JsonTextOptions.GetOptions(indent));
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Serializes an object as utf8 JSON straight into a stream.
+    /// </summary>
+    public static async Task<bool> TrySerializeToStreamAsync(this object? value, Stream stream, bool indent = true, CancellationToken cancellationToken = default)
+    {
+        if (value is null || stream is null) return false;
+
+        try
+        {
+            await JsonSerializer.SerializeAsync(
+                stream, value, JsonTextOptions.GetOptions(indent), cancellationToken);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     /// <summary>
     /// Tries to serializes an object to a JSON string.
@@ -98,10 +212,17 @@ public static class JsonSerialization
     /// <summary>
     /// Tries to convert an object to a TObject item.
     /// </summary>
-    public static bool TryGetValueAs<TObject>(this object value, [NotNullWhen(true)] out TObject? result)
+    public static bool TryGetValueAs<TObject>(this object? value, [NotNullWhen(true)] out TObject? result)
     {
         result = default;
         if (value is null) return false;
+
+        // already the type we want - no need to go near a converter.
+        if (value is TObject direct)
+        {
+            result = direct;
+            return true;
+        }
 
         // Umbraco's TryConvertTo turns a JsonElement into a string cleanly, but throws
         // (and swallows) an InvalidCastException for JsonElement -> value type. Do the
@@ -121,6 +242,49 @@ public static class JsonSerialization
         }
 
         var attempt = value.TryConvertTo<TObject>();
+        if (attempt.Success is false || attempt.Result is null) return false;
+
+        result = attempt.Result;
+        return true;
+    }
+
+    /// <summary>
+    /// Tries to convert an object to the requested runtime type.
+    /// </summary>
+    /// <remarks>
+    ///  Companion to the generic <c>TryGetValueAs&lt;TObject&gt;</c> for callers that
+    ///  only have a <see cref="Type"/> - property setters and the like. Same JsonElement pre-check.
+    /// </remarks>
+    public static bool TryGetValueAs(this object? value, Type targetType, [NotNullWhen(true)] out object? result)
+    {
+        result = default;
+        if (value is null) return false;
+
+        // already the type we want - no need to go near a converter.
+        if (targetType.IsInstanceOfType(value))
+        {
+            result = value;
+            return true;
+        }
+
+        // Umbraco's TryConvertTo turns a JsonElement into a string cleanly, but throws
+        // (and swallows) an InvalidCastException for JsonElement -> value type. Do the
+        // value-type conversion with System.Text.Json first to avoid that noise; string
+        // and anything STJ can't handle fall through to TryConvertTo below.
+        if (value is JsonElement element && targetType != typeof(string))
+        {
+            try
+            {
+                result = element.Deserialize(targetType, JsonTextOptions.GetOptions());
+                if (result is not null) return true;
+            }
+            catch
+            {
+                // not something STJ could convert directly - fall back to TryConvertTo below.
+            }
+        }
+
+        var attempt = value.TryConvertTo(targetType);
         if (attempt.Success is false || attempt.Result is null) return false;
 
         result = attempt.Result;

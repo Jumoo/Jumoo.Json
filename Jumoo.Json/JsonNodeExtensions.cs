@@ -1,16 +1,37 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
-using Umbraco.Extensions;
-
 namespace Jumoo.Json;
+
+/// <summary>
+///  Parsing, validating and serializing <see cref="JsonNode"/> values.
+/// </summary>
 public static class JsonNodeExtensions
 {
     /// <summary>
     /// Checks if the string is a valid JSON string.
     /// </summary>
+    /// <remarks>
+    ///  Validates with <see cref="JsonDocument"/> rather than parsing to a node graph -
+    ///  it reads from pooled buffers and doesn't allocate an object per value, which is
+    ///  wasted work when all we want back is a bool.
+    /// </remarks>
     public static bool IsValidJsonString(this string? value)
-        => value?.TryParseToJsonNode(out _) is true;
+    {
+        if (value.LooksLikeJson() is false) return false;
+
+        try
+        {
+            using var document = JsonDocument.Parse(value);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     /// <summary>
     /// Tries to parse a string to a JSON node.
@@ -18,7 +39,7 @@ public static class JsonNodeExtensions
     public static bool TryParseToJsonNode(this string? value, [NotNullWhen(true)] out JsonNode? node)
     {
         node = default;
-        if (string.IsNullOrEmpty(value) || value.DetectIsJson() is false) return false;
+        if (value.LooksLikeJson() is false) return false;
 
         try
         {
@@ -36,8 +57,9 @@ public static class JsonNodeExtensions
     /// </summary>
     public static bool TryParseToJsonNode(this object? value, [NotNullWhen(true)] out JsonNode? node)
     {
-        node = default;
+        if (TryParseJsonContainer(value, out node)) return true;
 
+        node = default;
         if (value?.TryGetValueAs<string>(out var stringValue) is true)
             return stringValue.TryParseToJsonNode(out node);
 
@@ -69,15 +91,11 @@ public static class JsonNodeExtensions
         if (value.TryParseToJsonNode(out node) is true)
             return node is not null;
 
-        try
-        {
-            node = JsonNode.Parse($"\"{value}\"", JsonTextOptions.GetNodeOptions());
-            return node is not null;
-        }
-        catch
-        {
-            return false;
-        }
+        // not json, so it is just a string value. Creating the node directly leaves the
+        // escaping to the writer - quoting it into a string and re-parsing meant anything
+        // containing a quote, backslash or control character failed to convert at all.
+        node = JsonValue.Create(value);
+        return node is not null;
     }
 
     /// <summary>
@@ -85,6 +103,8 @@ public static class JsonNodeExtensions
     /// </summary>
     public static bool TryConvertToJsonNode(this object value, [NotNullWhen(true)] out JsonNode? node)
     {
+        if (TryParseJsonContainer(value, out node)) return true;
+
         node = default;
         if (value.TryGetValueAs<string>(out var stringValue) is true)
             return stringValue.TryConvertToJsonNode(out node);
@@ -98,4 +118,75 @@ public static class JsonNodeExtensions
     public static JsonNode? ToJsonNode(this string? value)
         => TryParseToJsonNode(value, out var node) ? node : default;
 
+    /// <summary>
+    /// Converts a string to a JSON node, or null if it cannot be converted.
+    /// </summary>
+    /// <remarks>
+    ///  Unlike <see cref="ToJsonNode(string?)"/> a value that isn't json comes back as a string
+    ///  node rather than null.
+    /// </remarks>
+    public static JsonNode? ConvertToJsonNode(this string value)
+        => TryConvertToJsonNode(value, out var node) ? node : default;
+
+    /// <summary>
+    /// Converts an object to a JSON node, or null if it cannot be converted.
+    /// </summary>
+    public static JsonNode? ConvertToJsonNode(this object value)
+        => TryConvertToJsonNode(value, out var node) ? node : default;
+
+    /// <summary>
+    ///  Checks if the value is a non-string JSON value (array, object, number, boolean).
+    /// </summary>
+    public static bool IsNonStringJsonValue(this object? value)
+        => value is JsonElement { ValueKind: not JsonValueKind.String and not JsonValueKind.Undefined }
+           || value is JsonArray or JsonObject;
+
+    /// <summary>
+    ///  Re-parses a JsonObject, JsonArray, or an object/array JsonElement into a new node.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///  The string route (TryGetValueAs&lt;string&gt;) calls ToString() on these, which writes the
+    ///  whole tree out as an indented UTF-16 string just to parse it straight back. Writing compact
+    ///  UTF-8 (or, for a JsonElement, reading its raw bytes in place) gives the same node.
+    /// </para>
+    /// <para>
+    ///  It still parses rather than cloning: the result is a fresh, parentless node with the
+    ///  library's node options, the same as the string route returned.
+    /// </para>
+    /// </remarks>
+    private static bool TryParseJsonContainer(object? value, [NotNullWhen(true)] out JsonNode? node)
+    {
+        node = default;
+
+        try
+        {
+            switch (value)
+            {
+                case JsonObject or JsonArray:
+                    using (var buffer = new PooledByteBufferWriter())
+                    {
+                        using (var writer = new Utf8JsonWriter(buffer))
+                        {
+                            ((JsonNode)value).WriteTo(writer);
+                        }
+
+                        node = JsonNode.Parse(buffer.WrittenSpan, JsonTextOptions.GetNodeOptions());
+                    }
+                    return node is not null;
+
+                case JsonElement { ValueKind: JsonValueKind.Object or JsonValueKind.Array } element:
+                    node = JsonNode.Parse(JsonMarshal.GetRawUtf8Value(element), JsonTextOptions.GetNodeOptions());
+                    return node is not null;
+
+                default:
+                    return false;
+            }
+        }
+        catch
+        {
+            node = default;
+            return false;
+        }
+    }
 }
