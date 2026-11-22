@@ -3,6 +3,17 @@
 Notable changes to `Jumoo.Json`. This library ships one branch per Umbraco major
 (`v19/main`, `v18/main`, `v17/main`, …), so versions track the Umbraco major they target.
 
+## 19.0.0-rc2
+
+### Changed
+
+- `TryConvertToJsonNode(object)` and `TryParseToJsonNode(object)` no longer turn a `JsonObject`,
+  `JsonArray` or object/array `JsonElement` into an indented string just to parse it back. They
+  write compact UTF-8 into a pooled buffer, or read the element's raw bytes, and parse that. On a
+  large payload this cuts allocations by more than half (829 KB to 313 KB for a node). The result
+  is unchanged: a fresh, parentless node with the library's node options.
+- Test and build dependency updates.
+
 ## 19.0.0-rc1
 
 ### Changed
